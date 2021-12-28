@@ -13,6 +13,12 @@ albumentations==0.5.0
 pytorchcv==0.0.58   
 tqdm==4.48.2   
 seaborn==0.11.2
+
+## How to install
+
+```
+git clone https://github.com/nuualab/abnormal_motion_detection_3rd
+```
    
 ## Pretrained Model Download
 weights/falldown_classification 디렉토리에 저장   
