@@ -1,5 +1,7 @@
 # abnormal_motion_detection_3rd
-   
+사람의 쓰러짐 여부를 판별할 수 있는 모델을 배포합니다.
+경량화 모델을 사용하여 판별 속도가 향상 되었습니다.
+
 ## Requirements
 numpy==1.18.5   
 opencv-python==4.4.0.42   
