@@ -1,5 +1,17 @@
 # abnormal_motion_detection_3rd
    
+## Requirements
+numpy==1.18.5
+opencv-python==4.4.0.42
+opencv-python-headless==4.4.0.44
+glob2==0.7
+pytorch==1.10.0
+pandas==1.1.1
+albumentations==0.5.0
+pytorchcv==0.0.58
+tqdm==4.48.2
+seaborn==0.11.2
+   
 ## Pretrained Model Download
 weights/falldown_classification 디렉토리에 저장   
 [_efficientnetb4b_29.pth](https://drive.google.com/file/d/1aAcbP8E-g2BHUmoHCVGydUVSCy4g3vh0/view?usp=sharing, "_efficientnetb4b_29.pth")   
