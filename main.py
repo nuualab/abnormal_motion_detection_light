@@ -24,7 +24,9 @@ args = {
     "img_row": 1280,
     "yolo_weight": "weights/yolov5/yolov5x_best.pt",
     "human_cls_weight": "",
-    "falldown_cls_weight": "weights/falldown_classification/_efficientnetb4b_29.pth",
+    "falldown_cls_weight": (
+        "weights/falldown_classification/_efficientnetb4b_29.pth"
+    ),
     "yolo_conf_thres": 0.05,
     "yolo_max_det": 300,
     "calibrate_confidence_l1": 1.0,
@@ -46,7 +48,7 @@ args = {
     "concat_intersection_threshold": 0.5,
     "concat_human_threshold": 0.7,
     "concat_falldown_threshold": 0.6,
-    "isBrighterOn": False,
+    "isBrighterOn": True,
     "bri": 100,
     "clip_th": 50,
     "inp_boundary_iou_threshold": 0.5,
@@ -101,7 +103,9 @@ torch.cuda.empty_cache()
 
 # GPU 할당 변경하기
 GPU_NUM = args["gpu_num"]
-device = torch.device(f"cuda:{GPU_NUM}" if torch.cuda.is_available() else "cpu")
+device = torch.device(
+    f"cuda:{GPU_NUM}" if torch.cuda.is_available() else "cpu"
+)
 torch.cuda.set_device(device)  # change allocation of current GPU
 
 # load yolo model
@@ -109,7 +113,9 @@ from yolov5.models.experimental import attempt_load
 from yolov5.utils.general import non_max_suppression, scale_coords
 from yolov5.utils.augmentations import letterbox
 
-model_y_new = attempt_load(yolov5_weight, map_location=device, inplace=True, fuse=True)
+model_y_new = attempt_load(
+    yolov5_weight, map_location=device, inplace=True, fuse=True
+)
 model_y_new.classes = [0]
 model_y_new.to(device)
 model_y_new.eval()
@@ -243,7 +249,9 @@ class CLSDataset(torch.utils.data.Dataset):
 val_transform = albumentations.Compose(
     [
         albumentations.Resize(224, 224),
-        albumentations.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
+        albumentations.Normalize(
+            mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)
+        ),
         albumentations.pytorch.transforms.ToTensorV2(),
     ]
 )
@@ -290,7 +298,9 @@ def yolo_find_allbbox_ctrl_size(model_y, device, img_fld, **kwargs):
     for img in img_fld:
         img = cv2.imread(img)
         img0s = img.copy()
-        img = letterbox(img, img_row, stride=int(model_y.stride.max()), auto=True)[0]
+        img = letterbox(
+            img, img_row, stride=int(model_y.stride.max()), auto=True
+        )[0]
         img = img.transpose((2, 0, 1))[::-1]
         img = np.ascontiguousarray(img)
         img = torch.from_numpy(img).to(device).float()
@@ -298,7 +308,9 @@ def yolo_find_allbbox_ctrl_size(model_y, device, img_fld, **kwargs):
         img = img / 255.0
 
         pred = model_y(img, augment=False, visualize=False)
-        pred = non_max_suppression(pred[0], conf_thres=conf_thres, max_det=max_det)
+        pred = non_max_suppression(
+            pred[0], conf_thres=conf_thres, max_det=max_det
+        )
 
         if device == "cpu":
             result = pred[0].numpy()
@@ -377,11 +389,10 @@ def yolo_process(folder, model_y_new, device, **kwargs):
             fld_confidence.append(Conf)
 
         """
-        
         fld_detect = []
         for ii in range(len(fld_data1[0])):
             Det = []
-            Det.extend(fld_data1[0][ii]) 
+            Det.extend(fld_data1[0][ii])
             fld_detect.append(Det)
 
         fld_confidence = []
@@ -607,7 +618,9 @@ def falldown_classification_process(data, classifier):
         detect = class_data[key]["answer"]
         mode = class_data[key]["M"]
 
-        new_confidence = falldown_cls_new(detect, img_fld, fps, mode, classifier)
+        new_confidence = falldown_cls_new(
+            detect, img_fld, fps, mode, classifier
+        )
         class_data[key]["falldown_confidence"] = new_confidence
 
     classifier.cpu()
@@ -634,7 +647,9 @@ def build_own_structure(data):
         for idx, frame_num in enumerate(frame_num_list):
 
             try:
-                bboxs_list_per_frame = data_answer[frame_num]  # [[x1,y1,x2,y2], ....]
+                bboxs_list_per_frame = data_answer[
+                    frame_num
+                ]  # [[x1,y1,x2,y2], ....]
                 yolo_conf_list_per_frame = yolo_confidence[idx]
                 human_conf_list_per_frame = human_confidence[idx]
                 falldown_conf_list_per_frame = falldown_confidence[idx]
@@ -642,7 +657,9 @@ def build_own_structure(data):
                 data_after[key][frame_num] = {}
 
                 data_after[key][frame_num]["bbox"] = bboxs_list_per_frame
-                data_after[key][frame_num]["yolo_confidence"] = yolo_conf_list_per_frame
+                data_after[key][frame_num][
+                    "yolo_confidence"
+                ] = yolo_conf_list_per_frame
                 data_after[key][frame_num][
                     "human_confidence"
                 ] = human_conf_list_per_frame
@@ -664,17 +681,24 @@ def build_own_structure(data):
     return data_after
 
 
-def calibrate_confidence(confidence, bbox, activation="sigmoid", l1=1.0, l2=1.0):
+def calibrate_confidence(
+    confidence, bbox, activation="sigmoid", l1=1.0, l2=1.0
+):
 
     wh_ratio = compute_ratio(bbox)
     wh_ratio_reverse = 1 / (wh_ratio + 0.001) + 0.1
     a_w = 0
 
     if activation == "sigmoid":
-        a_w = np.exp(wh_ratio_reverse - 1) / (1 + np.exp(wh_ratio_reverse - 1)) - 0.5
+        a_w = (
+            np.exp(wh_ratio_reverse - 1) / (1 + np.exp(wh_ratio_reverse - 1))
+            - 0.5
+        )
 
     elif activation == "tanh":
-        a_w = (np.exp(wh_ratio_reverse - 1) - 1) / (1 + np.exp(wh_ratio_reverse - 1))
+        a_w = (np.exp(wh_ratio_reverse - 1) - 1) / (
+            1 + np.exp(wh_ratio_reverse - 1)
+        )
     else:
         a_w = np.exp(wh_ratio_reverse) / (1 + np.exp(wh_ratio_reverse))
 
@@ -739,7 +763,10 @@ def data_handling(data, **kwargs):
                             object_idx_list_filtered.append(idx)
                 else:
                     # human confidence 값과 falldown 값이 높은 경우
-                    if h_confs[idx] >= h_threshold and f_confs[idx] >= f_threshold:
+                    if (
+                        h_confs[idx] >= h_threshold
+                        and f_confs[idx] >= f_threshold
+                    ):
 
                         # y_confs를 보정
                         if calibrate_confidence(
@@ -753,7 +780,10 @@ def data_handling(data, **kwargs):
                             else:
                                 pass
 
-                    elif f_confs[idx] >= f_threshold and h_confs[idx] < h_threshold:
+                    elif (
+                        f_confs[idx] >= f_threshold
+                        and h_confs[idx] < h_threshold
+                    ):
 
                         h_conf_cal = calibrate_confidence(
                             h_confs[idx], bbox, "sigmoid", l1=1, l2=2
@@ -762,7 +792,10 @@ def data_handling(data, **kwargs):
                             y_confs[idx], bbox, "sigmoid", l1=1, l2=2
                         )
 
-                        if y_conf_cal >= y_threshold and h_conf_cal >= h_threshold:
+                        if (
+                            y_conf_cal >= y_threshold
+                            and h_conf_cal >= h_threshold
+                        ):
                             object_idx_list_filtered.append(idx)
 
                         else:
@@ -789,8 +822,12 @@ def data_handling(data, **kwargs):
 
                 data_filtered[key][frame]["bbox"] = bboxs_filtered
                 data_filtered[key][frame]["yolo_confidence"] = y_confs_filtered
-                data_filtered[key][frame]["human_confidence"] = h_confs_filtered
-                data_filtered[key][frame]["falldown_confidence"] = f_confs_filtered
+                data_filtered[key][frame][
+                    "human_confidence"
+                ] = h_confs_filtered
+                data_filtered[key][frame][
+                    "falldown_confidence"
+                ] = f_confs_filtered
 
         data_filtered[key]["frame_list"] = frame_list
         data_filtered[key]["mode"] = data[key]["mode"]
@@ -799,7 +836,9 @@ def data_handling(data, **kwargs):
     return data_filtered
 
 
-def create_main_bbox(data, img_dir, threshold=0.9, length=15, iou_threshold=0.75):
+def create_main_bbox(
+    data, img_dir, threshold=0.9, length=15, iou_threshold=0.75
+):
 
     frames = data[img_dir]["frame_list"]
 
@@ -838,7 +877,9 @@ def create_main_bbox(data, img_dir, threshold=0.9, length=15, iou_threshold=0.75
         if keep[i] == True:
             for j in range(i + 1, len(indexs)):
                 if (
-                    compute_iou2(prepare_list[indexs[i]], prepare_list[indexs[j]])
+                    compute_iou2(
+                        prepare_list[indexs[i]], prepare_list[indexs[j]]
+                    )
                     > iou_threshold
                 ):
                     keep[j] = False
@@ -848,7 +889,9 @@ def create_main_bbox(data, img_dir, threshold=0.9, length=15, iou_threshold=0.75
     len_keep = len(sorted_conf_keep)
 
     main_bbox_index = [int(sorted_conf_keep[i][0]) for i in range(len_keep)]
-    main_bbox = [prepare_list[int(sorted_conf_keep[i][0])] for i in range(len_keep)]
+    main_bbox = [
+        prepare_list[int(sorted_conf_keep[i][0])] for i in range(len_keep)
+    ]
     main_bbox_conf = [sorted_conf_keep[i][1] for i in range(len_keep)]
 
     return main_bbox, main_bbox_index, main_bbox_conf
@@ -979,7 +1022,9 @@ def object_tracking(data, iou_threshold=0.5, frame_length_threshold=20, dt=10):
 
                     for idx_, bbox in enumerate(bboxs):
                         iou = compute_iou2(bbox, object_bbox)
-                        intersection = compute_intersection_ratio(bbox, object_bbox)
+                        intersection = compute_intersection_ratio(
+                            bbox, object_bbox
+                        )
 
                         condition1 = iou >= iou_threshold
                         condition2 = intersection >= min(iou_threshold, 0.8)
@@ -1000,22 +1045,38 @@ def object_tracking(data, iou_threshold=0.5, frame_length_threshold=20, dt=10):
                         object_detected_bbox_list.append(bboxs[idx_detected])
 
                         object_detected_yolo_list.append(y_confs[idx_detected])
-                        object_detected_human_list.append(h_confs[idx_detected])
-                        object_detected_falldown_list.append(f_confs[idx_detected])
+                        object_detected_human_list.append(
+                            h_confs[idx_detected]
+                        )
+                        object_detected_falldown_list.append(
+                            f_confs[idx_detected]
+                        )
 
                     else:
                         if isSemiDetected:
                             object_frame_list.append(frame)
-                            object_detected_bbox_list.append(bboxs[idx_detected])
-                            object_detected_yolo_list.append(y_confs[idx_detected])
-                            object_detected_human_list.append(h_confs[idx_detected])
-                            object_detected_falldown_list.append(f_confs[idx_detected])
+                            object_detected_bbox_list.append(
+                                bboxs[idx_detected]
+                            )
+                            object_detected_yolo_list.append(
+                                y_confs[idx_detected]
+                            )
+                            object_detected_human_list.append(
+                                h_confs[idx_detected]
+                            )
+                            object_detected_falldown_list.append(
+                                f_confs[idx_detected]
+                            )
                         else:
                             continue
 
                 # 순서를 바꿔봄
-                data[key]["object"][idx]["object_frame_list"] = object_frame_list
-                data[key]["object"][idx]["object_bbox"] = object_detected_bbox_list
+                data[key]["object"][idx][
+                    "object_frame_list"
+                ] = object_frame_list
+                data[key]["object"][idx][
+                    "object_bbox"
+                ] = object_detected_bbox_list
 
                 data[key]["object"][idx][
                     "object_yolo_confidence"
@@ -1029,11 +1090,19 @@ def object_tracking(data, iou_threshold=0.5, frame_length_threshold=20, dt=10):
 
             for idx in object_idx_list:
 
-                object_frame_list = data[key]["object"][idx]["object_frame_list"]
+                object_frame_list = data[key]["object"][idx][
+                    "object_frame_list"
+                ]
 
-                if len(object_frame_list) > 2 and isinstance(object_frame_list, list):
-                    dt_measured = (object_frame_list[-1] - object_frame_list[0]) // 15
-                    condition1 = len(object_frame_list) >= frame_length_threshold
+                if len(object_frame_list) > 2 and isinstance(
+                    object_frame_list, list
+                ):
+                    dt_measured = (
+                        object_frame_list[-1] - object_frame_list[0]
+                    ) // 15
+                    condition1 = (
+                        len(object_frame_list) >= frame_length_threshold
+                    )
                     condition2 = dt_measured >= dt
 
                 else:
@@ -1071,7 +1140,9 @@ def interpolate_object_tracking_revised(
         original_frame_list = data_object_tracking[key]["frame_list"]
 
         for obj in data_object_tracking[key]["object"].keys():
-            frame_list = data_object_tracking[key]["object"][obj]["object_frame_list"]
+            frame_list = data_object_tracking[key]["object"][obj][
+                "object_frame_list"
+            ]
 
             if len(frame_list) == 0:
                 continue
@@ -1105,9 +1176,9 @@ def interpolate_object_tracking_revised(
                 idx_i = int(frame_i / fps) - 1
                 idx_f = int(frame_f / fps) - 1
 
-                obj_bbox_i = data_object_tracking[key]["object"][obj]["object_bbox"][
-                    idx
-                ]
+                obj_bbox_i = data_object_tracking[key]["object"][obj][
+                    "object_bbox"
+                ][idx]
 
                 obj_y_conf_i = data_object_tracking[key]["object"][obj][
                     "object_yolo_confidence"
@@ -1144,16 +1215,25 @@ def interpolate_object_tracking_revised(
 
             condition1 = frame_list[-1] < original_frame_list[-1]
             condition2 = (
-                frame_list[-1] - frame_list[0] >= inp_boundary_time_threshold * 15
+                frame_list[-1] - frame_list[0]
+                >= inp_boundary_time_threshold * 15
             )
 
             if condition1 and condition2:
-                for frame in range(frame_list[-1], original_frame_list[-1] + fps, fps):
+                for frame in range(
+                    frame_list[-1], original_frame_list[-1] + fps, fps
+                ):
 
                     bboxs = data_object_tracking[key][frame]["bbox"]
-                    y_confs = data_object_tracking[key][frame]["yolo_confidence"]
-                    h_confs = data_object_tracking[key][frame]["human_confidence"]
-                    f_confs = data_object_tracking[key][frame]["falldown_confidence"]
+                    y_confs = data_object_tracking[key][frame][
+                        "yolo_confidence"
+                    ]
+                    h_confs = data_object_tracking[key][frame][
+                        "human_confidence"
+                    ]
+                    f_confs = data_object_tracking[key][frame][
+                        "falldown_confidence"
+                    ]
 
                     if len(bboxs) == 0:
                         isSuccess = False
@@ -1180,14 +1260,17 @@ def interpolate_object_tracking_revised(
 
                             idx_list = []
                             for idx_, bbox_ in enumerate(bboxs_):
-                                iou_ = compute_iou2(obj_bbox_list_new[-1], bbox_)
+                                iou_ = compute_iou2(
+                                    obj_bbox_list_new[-1], bbox_
+                                )
                                 intersection_ = compute_intersection_ratio(
                                     obj_bbox_list_new[-1], bbox_
                                 )
 
                                 condition1 = iou_ >= inp_boundary_iou_threshold
                                 condition2 = (
-                                    intersection_ >= inp_boundary_intersection_threshold
+                                    intersection_
+                                    >= inp_boundary_intersection_threshold
                                 )
                                 condition3 = f_confs[idx] >= 0.8
 
@@ -1209,15 +1292,23 @@ def interpolate_object_tracking_revised(
                             if isSuccess:
                                 break
                             elif len(idx_list) >= 1:
-                                f_confs_target = [f_confs_[idx] for idx in idx_list]
+                                f_confs_target = [
+                                    f_confs_[idx] for idx in idx_list
+                                ]
                                 arg_f_max = np.argmax(f_confs_target)
 
                                 if f_confs_target[arg_f_max] >= 0.8:
                                     frame_list_complete.append(frame)
                                     obj_bbox_list_new.append(bboxs_[arg_f_max])
-                                    obj_y_conf_list_new.append(y_confs_[arg_f_max])
-                                    obj_h_conf_list_new.append(h_confs_[arg_f_max])
-                                    obj_f_conf_list_new.append(f_confs_[arg_f_max])
+                                    obj_y_conf_list_new.append(
+                                        y_confs_[arg_f_max]
+                                    )
+                                    obj_h_conf_list_new.append(
+                                        h_confs_[arg_f_max]
+                                    )
+                                    obj_f_conf_list_new.append(
+                                        f_confs_[arg_f_max]
+                                    )
                                     isSuccess = True
                                     break
 
@@ -1240,7 +1331,8 @@ def interpolate_object_tracking_revised(
 
                             condition1 = iou >= inp_boundary_iou_threshold
                             condition2 = (
-                                intersection >= inp_boundary_intersection_threshold
+                                intersection
+                                >= inp_boundary_intersection_threshold
                             )
                             condition3 = f_confs[idx] >= 0.8
 
@@ -1284,7 +1376,9 @@ def interpolate_object_tracking_revised(
             data_object_tracking[key]["object"][obj][
                 "object_frame_list"
             ] = frame_list_complete
-            data_object_tracking[key]["object"][obj]["object_bbox"] = obj_bbox_list_new
+            data_object_tracking[key]["object"][obj][
+                "object_bbox"
+            ] = obj_bbox_list_new
             data_object_tracking[key]["object"][obj][
                 "object_yolo_confidence"
             ] = obj_y_conf_list_new
@@ -1314,7 +1408,9 @@ def interpolate_object_tracking(
         original_frame_list = data_object_tracking[key]["frame_list"]
 
         for obj in data_object_tracking[key]["object"].keys():
-            frame_list = data_object_tracking[key]["object"][obj]["object_frame_list"]
+            frame_list = data_object_tracking[key]["object"][obj][
+                "object_frame_list"
+            ]
 
             if len(frame_list) == 0:
                 continue
@@ -1348,9 +1444,9 @@ def interpolate_object_tracking(
                 idx_i = int(frame_i / fps) - 1
                 idx_f = int(frame_f / fps) - 1
 
-                obj_bbox_i = data_object_tracking[key]["object"][obj]["object_bbox"][
-                    idx
-                ]
+                obj_bbox_i = data_object_tracking[key]["object"][obj][
+                    "object_bbox"
+                ][idx]
 
                 obj_y_conf_i = data_object_tracking[key]["object"][obj][
                     "object_yolo_confidence"
@@ -1383,16 +1479,26 @@ def interpolate_object_tracking(
                     obj_f_conf_list_new.append(obj_f_conf_i)
 
             condition1 = frame_list[-1] < original_frame_list[-1]
-            condition2 = frame_list[-1] - frame_list[0] >= inp_boundary_time_thres * 15
+            condition2 = (
+                frame_list[-1] - frame_list[0] >= inp_boundary_time_thres * 15
+            )
 
             if condition1 and condition2:
-                for frame in range(frame_list[-1], original_frame_list[-1] + fps, fps):
+                for frame in range(
+                    frame_list[-1], original_frame_list[-1] + fps, fps
+                ):
                     frame_list_complete.append(frame)
 
                     bboxs = data_object_tracking[key][frame]["bbox"]
-                    y_confs = data_object_tracking[key][frame]["yolo_confidence"]
-                    h_confs = data_object_tracking[key][frame]["human_confidence"]
-                    f_confs = data_object_tracking[key][frame]["falldown_confidence"]
+                    y_confs = data_object_tracking[key][frame][
+                        "yolo_confidence"
+                    ]
+                    h_confs = data_object_tracking[key][frame][
+                        "human_confidence"
+                    ]
+                    f_confs = data_object_tracking[key][frame][
+                        "falldown_confidence"
+                    ]
 
                     if len(bboxs) == 0:
                         isSuccess = False
@@ -1421,14 +1527,17 @@ def interpolate_object_tracking(
 
                             idx_list = []
                             for idx_, bbox_ in enumerate(bboxs_):
-                                iou_ = compute_iou2(obj_bbox_list_new[-1], bbox_)
+                                iou_ = compute_iou2(
+                                    obj_bbox_list_new[-1], bbox_
+                                )
                                 intersection_ = compute_intersection_ratio(
                                     obj_bbox_list_new[-1], bbox_
                                 )
 
                                 condition1 = iou_ >= inp_boundary_iou_thres
                                 condition2 = (
-                                    intersection_ >= inp_boundary_intersection_thres
+                                    intersection_
+                                    >= inp_boundary_intersection_thres
                                 )
 
                                 if condition1 and condition2:
@@ -1448,7 +1557,9 @@ def interpolate_object_tracking(
                             if isSuccess:
                                 break
                             elif len(idx_list) >= 1:
-                                f_confs_target = [f_confs_[idx] for idx in idx_list]
+                                f_confs_target = [
+                                    f_confs_[idx] for idx in idx_list
+                                ]
                                 arg_f_max = np.argmax(f_confs_target)
 
                                 obj_bbox_list_new.append(bboxs_[arg_f_max])
@@ -1479,7 +1590,9 @@ def interpolate_object_tracking(
                             )
 
                             condition1 = iou >= inp_boundary_iou_thres
-                            condition2 = intersection >= inp_boundary_intersection_thres
+                            condition2 = (
+                                intersection >= inp_boundary_intersection_thres
+                            )
 
                             if condition1 and condition2:
                                 obj_bbox_list_new.append(bboxs[idx])
@@ -1522,7 +1635,9 @@ def interpolate_object_tracking(
             data_object_tracking[key]["object"][obj][
                 "object_frame_list"
             ] = frame_list_complete
-            data_object_tracking[key]["object"][obj]["object_bbox"] = obj_bbox_list_new
+            data_object_tracking[key]["object"][obj][
+                "object_bbox"
+            ] = obj_bbox_list_new
             data_object_tracking[key]["object"][obj][
                 "object_yolo_confidence"
             ] = obj_y_conf_list_new
@@ -1551,7 +1666,9 @@ def handling_boundary_frame(data, **kwargs):
 
             frame_list = list(
                 reversed(
-                    data_object_tracking[key]["object"][obj]["object_frame_list"].copy()
+                    data_object_tracking[key]["object"][obj][
+                        "object_frame_list"
+                    ].copy()
                 )
             )
 
@@ -1561,7 +1678,11 @@ def handling_boundary_frame(data, **kwargs):
                 continue
 
             bboxs_list = list(
-                reversed(data_object_tracking[key]["object"][obj]["object_bbox"].copy())
+                reversed(
+                    data_object_tracking[key]["object"][obj][
+                        "object_bbox"
+                    ].copy()
+                )
             )
             y_confs_list = list(
                 reversed(
@@ -1608,18 +1729,18 @@ def handling_boundary_frame(data, **kwargs):
                 else:
                     break
 
-            data_object_tracking[key]["object"][obj]["object_frame_list"] = list(
-                reversed(frame_list)
-            )
+            data_object_tracking[key]["object"][obj][
+                "object_frame_list"
+            ] = list(reversed(frame_list))
             data_object_tracking[key]["object"][obj]["object_bbox"] = list(
                 reversed(bboxs_list)
             )
-            data_object_tracking[key]["object"][obj]["object_yolo_confidence"] = list(
-                reversed(y_confs_list)
-            )
-            data_object_tracking[key]["object"][obj]["object_human_confidence"] = list(
-                reversed(h_confs_list)
-            )
+            data_object_tracking[key]["object"][obj][
+                "object_yolo_confidence"
+            ] = list(reversed(y_confs_list))
+            data_object_tracking[key]["object"][obj][
+                "object_human_confidence"
+            ] = list(reversed(h_confs_list))
             data_object_tracking[key]["object"][obj][
                 "object_falldown_confidence"
             ] = list(reversed(f_confs_list))
@@ -1648,10 +1769,18 @@ def convert_original_structure(data):
         for obj in data_copy[key]["object"].keys():
 
             object_bboxs = data_copy[key]["object"][obj]["object_bbox"]
-            object_y_confs = data_copy[key]["object"][obj]["object_yolo_confidence"]
-            object_h_confs = data_copy[key]["object"][obj]["object_human_confidence"]
-            object_f_confs = data_copy[key]["object"][obj]["object_falldown_confidence"]
-            object_frame_list = data_copy[key]["object"][obj]["object_frame_list"]
+            object_y_confs = data_copy[key]["object"][obj][
+                "object_yolo_confidence"
+            ]
+            object_h_confs = data_copy[key]["object"][obj][
+                "object_human_confidence"
+            ]
+            object_f_confs = data_copy[key]["object"][obj][
+                "object_falldown_confidence"
+            ]
+            object_frame_list = data_copy[key]["object"][obj][
+                "object_frame_list"
+            ]
 
             for idx, object_frame in enumerate(object_frame_list):
 
@@ -1674,9 +1803,15 @@ def convert_original_structure(data):
                     obj_f_conf = []
 
                 data_copy[key][object_frame]["bbox"].append(obj_bbox)
-                data_copy[key][object_frame]["yolo_confidence"].append(obj_y_conf)
-                data_copy[key][object_frame]["human_confidence"].append(obj_h_conf)
-                data_copy[key][object_frame]["falldown_confidence"].append(obj_f_conf)
+                data_copy[key][object_frame]["yolo_confidence"].append(
+                    obj_y_conf
+                )
+                data_copy[key][object_frame]["human_confidence"].append(
+                    obj_h_conf
+                )
+                data_copy[key][object_frame]["falldown_confidence"].append(
+                    obj_f_conf
+                )
 
     return data_copy
 
@@ -1712,14 +1847,14 @@ def fill_result_all_frames(data_after):
                     isDetected_right = len(data_final[key][idx_r]["bbox"]) >= 1
 
             if (idx + 1) % fps == 0:
-                data_final[key]["annotations"][file_name]["bbox"] = data_final[key][
-                    (idx + 1)
-                ]["bbox"]
+                data_final[key]["annotations"][file_name]["bbox"] = data_final[
+                    key
+                ][(idx + 1)]["bbox"]
             else:
                 if int((idx + 1) // fps + 1) * fps > len(flds):
-                    data_final[key]["annotations"][file_name]["bbox"] = data_final[key][
-                        int((idx + 1) // fps) * fps
-                    ]["bbox"]
+                    data_final[key]["annotations"][file_name][
+                        "bbox"
+                    ] = data_final[key][int((idx + 1) // fps) * fps]["bbox"]
                 else:
                     if idx + 1 < fps:
                         if len(data_final[key][fps]["bbox"]) >= 1:
@@ -1727,11 +1862,15 @@ def fill_result_all_frames(data_after):
                                 "bbox"
                             ] = data_final[key][fps]["bbox"]
                         else:
-                            data_final[key]["annotations"][file_name]["bbox"] = []
+                            data_final[key]["annotations"][file_name][
+                                "bbox"
+                            ] = []
                     else:
-                        data_final[key]["annotations"][file_name]["bbox"] = data_final[
-                            key
-                        ][int((idx + 1) // fps) * fps]["bbox"]
+                        data_final[key]["annotations"][file_name][
+                            "bbox"
+                        ] = data_final[key][int((idx + 1) // fps) * fps][
+                            "bbox"
+                        ]
 
     return data_final
 
@@ -1771,7 +1910,9 @@ def build_submission_2021(data_final):
             if len(data_final[key]["annotations"][file_name]["bbox"]) >= 1:
 
                 for bbox in data_final[key]["annotations"][file_name]["bbox"]:
-                    submission["answer"][file_name]["box"].append(make_int(bbox))
+                    submission["answer"][file_name]["box"].append(
+                        make_int(bbox)
+                    )
 
     return submission
 
@@ -2030,14 +2171,16 @@ def object_concat_next_step(data, iou_threshold=0, distance_threshold=20):
                                     box1[0] <= box2[0]
                                     and (
                                         box1[2] > box2[0]
-                                        or box2[0] - box1[2] < distance_threshold
+                                        or box2[0] - box1[2]
+                                        < distance_threshold
                                     )
                                 )
                                 or (
                                     box2[0] <= box1[0]
                                     and (
                                         box2[2] > box1[0]
-                                        or box1[0] - box2[2] < distance_threshold
+                                        or box1[0] - box2[2]
+                                        < distance_threshold
                                     )
                                 )
                             ) and (
@@ -2045,14 +2188,16 @@ def object_concat_next_step(data, iou_threshold=0, distance_threshold=20):
                                     box1[1] <= box2[1]
                                     and (
                                         box1[3] > box2[1]
-                                        or box2[1] - box1[3] < distance_threshold
+                                        or box2[1] - box1[3]
+                                        < distance_threshold
                                     )
                                 )
                                 or (
                                     box2[1] <= box1[1]
                                     and (
                                         box2[3] > box1[1]
-                                        or box1[1] - box2[3] < distance_threshold
+                                        or box1[1] - box2[3]
+                                        < distance_threshold
                                     )
                                 )
                             )
@@ -2134,7 +2279,9 @@ def remove_conjugated_object(data, **kwargs):
                     intersection = compute_intersection_ratio(bbox, bbox_)
 
                     condition_iou = iou >= iou_threshold
-                    condition_intersection = intersection >= intersection_threshold
+                    condition_intersection = (
+                        intersection >= intersection_threshold
+                    )
 
                     if (
                         condition_iou or condition_intersection
@@ -2244,7 +2391,9 @@ if __name__ == "__main__":
 
     # argument : object interpolate
     inp_boundary_iou_thres = args["inp_boundary_iou_threshold"]
-    inp_boundary_intersection_thres = args["inp_boundary_intersection_threshold"]
+    inp_boundary_intersection_thres = args[
+        "inp_boundary_intersection_threshold"
+    ]
     inp_boundary_time_thres = args["inp_boundary_time_threshold"]
 
     # time measure
@@ -2302,10 +2451,12 @@ if __name__ == "__main__":
     )
 
     # object frame 누락 요소 찾기
-    #     data_branch3 = interpolate_object_tracking(data_branch2,
-    #                                                inp_boundary_iou_thres = inp_boundary_iou_thres,
-    #                                                inp_boundary_intersection_thres = inp_boundary_intersection_thres,
-    #                                                inp_boundary_time_thres = inp_boundary_time_thres)
+    # data_branch3 = interpolate_object_tracking(
+    #     data_branch2,
+    #     inp_boundary_iou_thres=inp_boundary_iou_thres,
+    #     inp_boundary_intersection_thres=inp_boundary_intersection_thres,
+    #     inp_boundary_time_thres=inp_boundary_time_thres,
+    # )
 
     data_branch3 = interpolate_object_tracking_revised(
         data_branch2,
