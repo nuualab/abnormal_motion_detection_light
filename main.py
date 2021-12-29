@@ -28,10 +28,10 @@ args = {
         "weights/falldown_classification/_efficientnetb4b_29.pth"
     ),
     "yolo_conf_thres": 0.05,
-    "yolo_max_det": 300,
+    "yolo_max_det": 1000,
     "calibrate_confidence_l1": 1.0,
     "calibrate_confidence_l2": 2.0,
-    "yolo_threshold": 0.05,
+    "yolo_threshold": 0.01,
     "human_threshold": 0.0,
     "falldown_threshold": 0.25,
     "dataset_dir": "./",
