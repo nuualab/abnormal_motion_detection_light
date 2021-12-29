@@ -20,14 +20,14 @@ from pytorchcv.model_provider import get_model as ptcv_get_model
 
 args = {
     "gpu_num": 0,
-    "fps": 6,
+    "fps": 5,
     "img_row": 1280,
     "yolo_weight": "weights/yolov5/yolov5x_best.pt",
     "human_cls_weight": "",
     "falldown_cls_weight": (
         "weights/falldown_classification/_efficientnetb4b_29.pth"
     ),
-    "yolo_conf_thres": 0.05,
+    "yolo_conf_thres": 0.01,
     "yolo_max_det": 1000,
     "calibrate_confidence_l1": 1.0,
     "calibrate_confidence_l2": 2.0,
