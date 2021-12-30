@@ -1173,8 +1173,8 @@ def interpolate_object_tracking_revised(
                 else:
                     frame_f = frame_list[idx + 1]
 
-                idx_i = int(frame_i / fps) - 1
-                idx_f = int(frame_f / fps) - 1
+                # idx_i = int(frame_i / fps) - 1
+                # idx_f = int(frame_f / fps) - 1
 
                 obj_bbox_i = data_object_tracking[key]["object"][obj][
                     "object_bbox"
@@ -1441,8 +1441,8 @@ def interpolate_object_tracking(
                 else:
                     frame_f = frame_list[idx + 1]
 
-                idx_i = int(frame_i / fps) - 1
-                idx_f = int(frame_f / fps) - 1
+                # idx_i = int(frame_i / fps) - 1
+                # idx_f = int(frame_f / fps) - 1
 
                 obj_bbox_i = data_object_tracking[key]["object"][obj][
                     "object_bbox"
@@ -1832,19 +1832,19 @@ def fill_result_all_frames(data_after):
             file_name = fld.split("/")[-1]
             data_final[key]["annotations"][file_name] = {}
 
-            isDetected_left = False
-            isDetected_right = False
+            # isDetected_left = False
+            # isDetected_right = False
 
             # dummy
-            if (idx + 1) >= fps:
+            # if (idx + 1) >= fps:
 
-                idx_l = int((idx + 1) // fps) * fps
-                idx_r = int((idx + 1) // fps + 1) * fps
+            #     idx_l = int((idx + 1) // fps) * fps
+            #     idx_r = int((idx + 1) // fps + 1) * fps
 
-                isDetected_left = len(data_final[key][idx_l]["bbox"]) >= 1
+            #     isDetected_left = len(data_final[key][idx_l]["bbox"]) >= 1
 
-                if idx_r <= len(flds):
-                    isDetected_right = len(data_final[key][idx_r]["bbox"]) >= 1
+            #     if idx_r <= len(flds):
+            #         isDetected_right = len(data_final[key][idx_r]["bbox"]) >= 1
 
             if (idx + 1) % fps == 0:
                 data_final[key]["annotations"][file_name]["bbox"] = data_final[
