@@ -1,22 +1,25 @@
 # -*- coding: utf-8 -*-
-import os
+import copy
 import json
+import math
+import random
+import sys
 import time
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
+from copy import deepcopy
+
+import albumentations.pytorch
 import cv2
 import glob2
-import argparse
 import numpy as np
-import copy
-import sys
-import random
-import pandas as pd
-import math
-from pathlib import Path
-import albumentations.pytorch
+import torch
+import torch.nn as nn
 from pytorchcv.model_provider import get_model as ptcv_get_model
+
+# import argparse
+# import os
+# from pathlib import Path
+# import pandas as pd
+# import torch.nn.functional as F
 
 args = {
     "gpu_num": 0,
@@ -110,8 +113,8 @@ torch.cuda.set_device(device)  # change allocation of current GPU
 
 # load yolo model
 from yolov5.models.experimental import attempt_load
-from yolov5.utils.general import non_max_suppression, scale_coords
 from yolov5.utils.augmentations import letterbox
+from yolov5.utils.general import non_max_suppression, scale_coords
 
 model_y_new = attempt_load(
     yolov5_weight, map_location=device, inplace=True, fuse=True
@@ -2352,10 +2355,9 @@ def remove_duplicated(data, iou_threshold=0.99):
     return data_output
 
 
-from utils.datasets import create_dataloader, LoadImages
-from pathlib import Path
-import cv2
-from copy import deepcopy
+# from utils.datasets import create_dataloader, LoadImages
+# from pathlib import Path
+# import cv2
 
 if __name__ == "__main__":
 
