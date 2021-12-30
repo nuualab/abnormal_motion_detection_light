@@ -669,7 +669,7 @@ def build_own_structure(data):
 
                 frame_list.append(frame_num)
 
-            except:
+            except Exception:
                 continue
 
         frame_list = sorted(frame_list)
@@ -874,7 +874,7 @@ def create_main_bbox(
 
     for i in range(len(indexs) - 1):
         keep_num = 1
-        if keep[i] == True:
+        if keep[i] is True:
             for j in range(i + 1, len(indexs)):
                 if (
                     compute_iou2(
@@ -1790,7 +1790,7 @@ def convert_original_structure(data):
                         obj_y_conf = object_y_confs[idx]
                         obj_h_conf = object_h_confs[idx]
                         obj_f_conf = object_f_confs[idx]
-                    except:
+                    except Exception:
                         obj_bbox = []
                         obj_y_conf = []
                         obj_h_conf = []
@@ -2108,7 +2108,9 @@ def object_concat(data, **kwargs):
                     human_confidence=h_confs,
                     falldown_confidence=f_confs,
                     concat_iou_threshold=concat_iou_threshold,
-                    concat_intersection_threshold=concat_intersection_threshold,
+                    concat_intersection_threshold=(
+                        concat_intersection_threshold
+                    ),
                     concat_human_threshold=concat_human_threshold,
                     concat_falldown_threshold=concat_falldown_threshold,
                     frame=frame,
