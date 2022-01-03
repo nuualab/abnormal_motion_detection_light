@@ -159,26 +159,26 @@ def img_estim(image, threshold=50):
 # +
 # image processor
 # image bright / contrast / filter application
-def sharpening(image):
-    kernel = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])
-    img = cv2.filter2D(image, -1, kernel)
-    return img
+# def sharpening(image):
+#     kernel = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])
+#     img = cv2.filter2D(image, -1, kernel)
+#     return img
 
 
-def contrast_img(image, clip_th=3.0, tileGridSize=(8, 8)):
-    lab = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
-    l, a, b = cv2.split(lab)
-    clahe = cv2.createCLAHE(clipLimit=clip_th, tileGridSize=tileGridSize)
-    cl = clahe.apply(l)
-    limg = cv2.merge((cl, a, b))
-    img = cv2.cvtColor(limg, cv2.COLOR_LAB2BGR)
-    return img
+# def contrast_img(image, clip_th=3.0, tileGridSize=(8, 8)):
+#     lab = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
+#     l, a, b = cv2.split(lab)
+#     clahe = cv2.createCLAHE(clipLimit=clip_th, tileGridSize=tileGridSize)
+#     cl = clahe.apply(l)
+#     limg = cv2.merge((cl, a, b))
+#     img = cv2.cvtColor(limg, cv2.COLOR_LAB2BGR)
+#     return img
 
 
-def brighter(image, bri=args["bri"]):
-    M = np.ones(image.shape, dtype="uint8") * bri
-    img = cv2.add(image, M)
-    return img
+# def brighter(image, bri=args["bri"]):
+#     M = np.ones(image.shape, dtype="uint8") * bri
+#     img = cv2.add(image, M)
+#     return img
 
 
 def brighter_revised(image, mul=2):
