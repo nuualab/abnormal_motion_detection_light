@@ -265,9 +265,9 @@ def compute_ratio(bbox):
     return (bbox[3] - bbox[1]) / (bbox[2] - bbox[0])
 
 
-def compute_iou2(box_a, box_b):
+def compute_iou(box_a, box_b):
 
-    # compute iou with method 2 : just multiply the difference of x and y
+    # compute iou with method : just multiply the difference of x and y
     max_x = min(box_a[2], box_b[2])
     max_y = min(box_a[3], box_b[3])
     min_x = max(box_a[0], box_b[0])
@@ -392,19 +392,17 @@ def yolo_process(folder, model_y_new, device, **kwargs):
             fld_detect.append(Det)
             fld_confidence.append(Conf)
 
-        """
-        fld_detect = []
-        for ii in range(len(fld_data1[0])):
-            Det = []
-            Det.extend(fld_data1[0][ii])
-            fld_detect.append(Det)
+        # fld_detect = []
+        # for ii in range(len(fld_data1[0])):
+        #     Det = []
+        #     Det.extend(fld_data1[0][ii])
+        #     fld_detect.append(Det)
 
-        fld_confidence = []
-        for ii in range(len(fld_data1[1])):
-            Conf = []
-            Conf.extend(fld_data1[1][ii])
-            fld_confidence.append(Conf)
-        """
+        # fld_confidence = []
+        # for ii in range(len(fld_data1[1])):
+        #     Conf = []
+        #     Conf.extend(fld_data1[1][ii])
+        #     fld_confidence.append(Conf)
 
         data[fld_name] = dict()
 
@@ -862,7 +860,7 @@ def create_main_bbox(
     for i in range(len(prepare_list)):
         s = 0
         for j in range(len(prepare_list)):
-            iou = compute_iou2(prepare_list[i], prepare_list[j])
+            iou = compute_iou(prepare_list[i], prepare_list[j])
             if iou >= threshold:
                 s += 1
         iou_list.append(s)
@@ -881,7 +879,7 @@ def create_main_bbox(
         if keep[i] is True:
             for j in range(i + 1, len(indexs)):
                 if (
-                    compute_iou2(
+                    compute_iou(
                         prepare_list[indexs[i]], prepare_list[indexs[j]]
                     )
                     > iou_threshold
@@ -969,7 +967,7 @@ def object_tracking(data, iou_threshold=0.5, frame_length_threshold=20, dt=10):
                 if idx == idx_ or idx > idx_:
                     continue
 
-                iou = compute_iou2(main_bbox, main_bbox_)
+                iou = compute_iou(main_bbox, main_bbox_)
 
                 if iou > iou_threshold:
                     is_conjugated = True
@@ -1025,7 +1023,7 @@ def object_tracking(data, iou_threshold=0.5, frame_length_threshold=20, dt=10):
                         continue
 
                     for idx_, bbox in enumerate(bboxs):
-                        iou = compute_iou2(bbox, object_bbox)
+                        iou = compute_iou(bbox, object_bbox)
                         intersection = compute_intersection_ratio(
                             bbox, object_bbox
                         )
@@ -1264,7 +1262,7 @@ def interpolate_object_tracking_revised(
 
                             idx_list = []
                             for idx_, bbox_ in enumerate(bboxs_):
-                                iou_ = compute_iou2(
+                                iou_ = compute_iou(
                                     obj_bbox_list_new[-1], bbox_
                                 )
                                 intersection_ = compute_intersection_ratio(
@@ -1328,7 +1326,7 @@ def interpolate_object_tracking_revised(
                         isSuccess = False
 
                         for idx, bbox in enumerate(bboxs):
-                            iou = compute_iou2(obj_bbox_list_new[-1], bbox)
+                            iou = compute_iou(obj_bbox_list_new[-1], bbox)
                             intersection = compute_intersection_ratio(
                                 obj_bbox_list_new[-1], bbox
                             )
@@ -1531,7 +1529,7 @@ def interpolate_object_tracking(
 
                             idx_list = []
                             for idx_, bbox_ in enumerate(bboxs_):
-                                iou_ = compute_iou2(
+                                iou_ = compute_iou(
                                     obj_bbox_list_new[-1], bbox_
                                 )
                                 intersection_ = compute_intersection_ratio(
@@ -1588,7 +1586,7 @@ def interpolate_object_tracking(
                         isSuccess = False
 
                         for idx, bbox in enumerate(bboxs):
-                            iou = compute_iou2(obj_bbox_list_new[-1], bbox)
+                            iou = compute_iou(obj_bbox_list_new[-1], bbox)
                             intersection = compute_intersection_ratio(
                                 obj_bbox_list_new[-1], bbox
                             )
@@ -2035,7 +2033,7 @@ def object_concat_per_frame(frame=0, **kwargs):
             for idx_ in range(idx + 1, len(bboxs)):
 
                 bbox_ = bboxs[idx_]
-                iou = compute_iou2(bbox, bbox_)
+                iou = compute_iou(bbox, bbox_)
                 intersection = compute_intersection_ratio(bbox, bbox_)
 
                 condition_iou = iou >= iou_threshold
@@ -2166,7 +2164,7 @@ def object_concat_next_step(data, iou_threshold=0, distance_threshold=20):
                         if bboxs_remove_list[idx_] == 0:
                             bbox = bboxs[idx]
                             bbox_ = bboxs[idx_]
-                            iou = compute_iou2(bbox, bbox_)
+                            iou = compute_iou(bbox, bbox_)
                             condition_iou = iou > iou_threshold
 
                             box1 = bbox
@@ -2281,7 +2279,7 @@ def remove_conjugated_object(data, **kwargs):
                     bbox_ = bboxs[idx_]
                     area_ = cal_area(bbox_)
 
-                    iou = compute_iou2(bbox, bbox_)
+                    iou = compute_iou(bbox, bbox_)
                     intersection = compute_intersection_ratio(bbox, bbox_)
 
                     condition_iou = iou >= iou_threshold
@@ -2337,7 +2335,7 @@ def remove_duplicated(data, iou_threshold=0.99):
 
                     bbox_ = bboxs[idx_]
 
-                    iou = compute_iou2(bbox, bbox_)
+                    iou = compute_iou(bbox, bbox_)
                     condition_iou = iou >= iou_threshold
 
                     if condition_iou:
