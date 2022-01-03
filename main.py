@@ -146,13 +146,14 @@ classifier_list = {
 
 
 def img_estim(image, threshold=50):
-    if np.mean(image) > threshold:
+    mean_img = np.mean(image)
+    if mean_img > threshold:
         mode = "light"
-    elif np.mean(image) > threshold // 2 and np.mean(image) <= threshold:
+    elif mean_img > threshold // 2 and mean_img <= threshold:
         mode = "dark"
     else:
         mode = "verydark"
-    return mode, np.mean(image)
+    return mode, mean_img
 
 
 # +
