@@ -19,13 +19,19 @@ seaborn==0.11.2
 ```
 git clone https://github.com/nuualab/abnormal_motion_detection_3rd
 ```
-   
+
+## How to run
+```
+python main.py
+```
+example 폴더의 연속된 이미지 파일을 읽어 추론 후 answer.json 파일을 생성 합니다.  
+
 ## Pretrained Model Download
 weights/falldown_classification 디렉토리에 저장   
-[_efficientnetb4b_29.pth](https://drive.google.com/file/d/1aAcbP8E-g2BHUmoHCVGydUVSCy4g3vh0/view?usp=sharing, "_efficientnetb4b_29.pth")   
+[efficientnetb4b_fall_detection.pth](https://drive.google.com/file/d/1aAcbP8E-g2BHUmoHCVGydUVSCy4g3vh0/view?usp=sharing, "efficientnetb4b_fall_detection.pth")   
      
 weights/yolov5 디렉토리에 저장   
-[yolov5x_best.pt](https://drive.google.com/file/d/1x_B1vepkkI4An_7ApexVxYQdaJWgcck0/view?usp=sharing, "yolov5x_best.pt")   
+[yolov5x_human_detection.pt](https://drive.google.com/file/d/1x_B1vepkkI4An_7ApexVxYQdaJWgcck0/view?usp=sharing, "yolov5x_human_detection.pt")   
    
 ## License
 이 프로젝트는 Apache 2.0 라이선스를 따릅니다. 모델 및 코드를 사용할 경우 라이선스 내용을 준수해주세요. 라이선스 전문은 LICENSE 파일에서 확인하실 수 있습니다.
