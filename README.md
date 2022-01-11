@@ -1,4 +1,4 @@
-# abnormal_motion_detection_3rd
+# abnormal_motion_detection_light
 사람의 쓰러짐 여부를 판별할 수 있는 모델을 배포합니다.  
 (10초 이상 쓰러져 있는 사람을 검출하여 쓰러진 대상의 바운딩 박스의 좌표를 생성합니다.)  
 경량화 모델을 사용하여 판별 속도가 향상 되었습니다.  
