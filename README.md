@@ -18,7 +18,7 @@ seaborn==0.11.2
 ## How to install
 
 ```
-git clone https://github.com/nuualab/abnormal_motion_detection_3rd
+git clone https://github.com/nuualab/abnormal_motion_detection_light
 ```
 
 ## How to run
